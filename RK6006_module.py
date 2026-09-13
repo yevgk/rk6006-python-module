@@ -21,15 +21,22 @@ class RK6006:
         self.amps_resolution = 1000
         self.power_resolution = 100
         self.in_volts_resolution = 100
-        self.model = "RK6006"
-        self.max_set_voltage = round((regs[14] / self.in_volts_resolution) / 1.1 - 1.5, 2)
+        if self.type == 60067:
+            self.model = "RK6006H"
+            self.max_set_voltage = 61.0
+        else:
+            self.model = "RK6006"
+            self.max_set_voltage = round((regs[14] / self.in_volts_resolution) / 1.1 - 1.5, 2)
         self.max_set_current = 6
         self.max_ocp_current = 6.2
         self.registers_max_len = 120
 
-        if self.type != 60066:
+        self._validate_module_type()
+
+    def _validate_module_type(self):
+        if self.type != 60066 and self.type != 60067:
             print("Detected Type: ", self.type)
-            print("Expected Type: 60066")
+            print("Expected Type: 60066 (RK6006) or 60067 (RK6006H)")
             print("Exit the program!")
             exit(0)
 
@@ -87,11 +94,7 @@ class RK6006:
         """ Reads all registers and prints most of them"""
         regs = self._read_registers(0, self.registers_max_len)
         self.type = int(regs[0])
-        if self.type != 60066:
-            print("Detected Type: ", self.type)
-            print("Expected Type: 60066")
-            print("Exit the program!")
-            exit(0)
+        self._validate_module_type()
         print("=== Print Full Status ===")
         print("=== Device ===")
         print(f"Model   : {self.model}")
