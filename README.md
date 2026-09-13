@@ -32,4 +32,20 @@ This module allows to read and control the following options:
 
 For usage see the example file.
 
+CLI usage:
+
+```bash
+python rk6006_cli.py --port COM3 info
+python rk6006_cli.py --port COM3 status
+python rk6006_cli.py --port COM3 set --set_voltage 12 --set_current 1.5
+python rk6006_cli.py --port COM3 on --set_voltage 12 --set_current 1.5
+python rk6006_cli.py --port COM3 off --set_current 0.5
+python rk6006_cli.py --port COM3 sample --count 10 --interval 0.5
+python rk6006_cli.py --port COM3 sample --duration 30 --csv
+```
+
+If `--port` is omitted, the CLI tries to use the first CH340 USB serial adapter
+(`VID:PID=1A86:7523`). Use `--baudrate`, `--address`, and `--timeout` if the
+module settings differ from the defaults.
+
 Tested with Python 3.11.
