@@ -1,7 +1,7 @@
-# Riden RK6006 simple Python module
+# Riden RK6006/RK6012 simple Python module
 
-Very simple Python module for accessing the Riden RK6006 DC-DC module through the Micro USB port and the on-board CH340 USB to UART converter.
-As with previous models, the RK6006 uses the Modbus protocol over serial, the registers however are different than the RD and DPS models.
+Very simple Python module for accessing the Riden RK6006/RK6006H/RK6012 DC-DC modules through the USB serial interface.
+As with previous models, these modules use the Modbus protocol over serial, the registers however are different than the RD and DPS models.
 
 Based on https://github.com/Baldanos/rd6006
 

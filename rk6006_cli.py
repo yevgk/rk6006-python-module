@@ -1,4 +1,4 @@
-"""Command line interface for Riden RK6006/RK6006H supplies."""
+"""Command line interface for Riden RK6006/RK6006H/RK6012 supplies."""
 
 from __future__ import annotations
 
@@ -256,7 +256,7 @@ def add_setpoint_options(parser: argparse.ArgumentParser) -> None:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="rk6006",
-        description="Control a Riden RK6006/RK6006H laboratory power supply.",
+        description="Control a Riden RK6006/RK6006H/RK6012 laboratory power supply.",
     )
     add_connection_options(parser)
 

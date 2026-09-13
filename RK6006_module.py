@@ -3,6 +3,28 @@ import time
 import minimalmodbus
 
 
+SUPPORTED_MODELS = {
+    60066: {
+        "model": "RK6006",
+        "max_set_current": 6,
+        "max_ocp_current": 6.2,
+        "fixed_max_voltage": None,
+    },
+    60067: {
+        "model": "RK6006H",
+        "max_set_current": 6,
+        "max_ocp_current": 6.2,
+        "fixed_max_voltage": 61.0,
+    },
+    60122: {
+        "model": "RK6012",
+        "max_set_current": 12,
+        "max_ocp_current": 12.2,
+        "fixed_max_voltage": None,
+    },
+}
+
+
 class RK6006:
     def __init__(self, port, baudrate=115200, address=1, modbus_timeout=0.5):
         self.port = port
@@ -21,22 +43,31 @@ class RK6006:
         self.amps_resolution = 1000
         self.power_resolution = 100
         self.in_volts_resolution = 100
-        if self.type == 60067:
-            self.model = "RK6006H"
-            self.max_set_voltage = 61.0
-        else:
-            self.model = "RK6006"
-            self.max_set_voltage = round((regs[14] / self.in_volts_resolution) / 1.1 - 1.5, 2)
-        self.max_set_current = 6
-        self.max_ocp_current = 6.2
-        self.registers_max_len = 120
-
         self._validate_module_type()
 
+        model_info = SUPPORTED_MODELS[self.type]
+        self.model = model_info["model"]
+        self.fixed_max_voltage = model_info["fixed_max_voltage"]
+        self.max_set_voltage = self._max_set_voltage_from_input(
+            regs[14] / self.in_volts_resolution
+        )
+        self.max_set_current = model_info["max_set_current"]
+        self.max_ocp_current = model_info["max_ocp_current"]
+        self.registers_max_len = 120
+
+    def _max_set_voltage_from_input(self, input_voltage):
+        if self.fixed_max_voltage is not None:
+            return self.fixed_max_voltage
+        return round(input_voltage / 1.1 - 1.5, 2)
+
     def _validate_module_type(self):
-        if self.type != 60066 and self.type != 60067:
+        if self.type not in SUPPORTED_MODELS:
             print("Detected Type: ", self.type)
-            print("Expected Type: 60066 (RK6006) or 60067 (RK6006H)")
+            supported = ", ".join(
+                f"{type_code} ({info['model']})"
+                for type_code, info in SUPPORTED_MODELS.items()
+            )
+            print(f"Expected Type: {supported}")
             print("Exit the program!")
             exit(0)
 
@@ -69,7 +100,7 @@ class RK6006:
 
     def update_max_set_voltage(self):
         """ Updates the value of max_set_voltage according the current module input voltage """
-        self.max_set_voltage = round(self.get_input_voltage()/1.1 - 1.5, 2)
+        self.max_set_voltage = self._max_set_voltage_from_input(self.get_input_voltage())
 
     def print_saved_memory(self, mem=0):
         """ Reads the 4 register of a Memory[0-9] and print on a single line"""
@@ -140,7 +171,7 @@ class RK6006:
     def get_input_voltage(self):
         """ Returns the current board input voltage and updates the max_set_voltage value """
         input_voltage = self._read_register(14) / self.in_volts_resolution
-        self.max_set_voltage = round(input_voltage/1.1 - 1.5, 2)
+        self.max_set_voltage = self._max_set_voltage_from_input(input_voltage)
         return input_voltage
 
     def get_set_voltage(self):
